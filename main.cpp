@@ -46,8 +46,8 @@ int main(int argc, char **argv)
     {
         while((res=pcap_next_ex(fp,&pkt_header,&pkt_data))>=0)
         {
-            pkt_length = pkt_header->len;
             if(res == 0)continue;
+            pkt_length = pkt_header->len;
             irh = (struct ieee80211_radiotap_header*)pkt_data;
             printf("-------------------ieee802.11 packet-------------------\n");
             printf("Header revision : %02x\n",irh->it_version);
