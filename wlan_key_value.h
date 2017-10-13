@@ -9,7 +9,8 @@ struct beacon_info_value{
     int beacon_frame_count;
     int data;
     int ch;
-    u_int8_t ESSID[];
+    u_int8_t ESSID[33];
+    int ESSID_Len;
 };
 struct bssid_station_key{
     u_int8_t bssid[6];
