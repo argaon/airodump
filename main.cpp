@@ -24,6 +24,7 @@ struct taged_parameter *tag;
 struct beacon_info_value *biv;
 struct bssid_station_key *bsk;
 struct bssid_station_value *bsv;
+struct beacon_info_value nbiv;
 
 char errbuf[PCAP_ERRBUF_SIZE];
 
@@ -85,13 +86,12 @@ int main(int argc, char **argv)
             pkt_data += 4;  //type_subtype length
             pkt_length -= 4;
             b_f = (struct Beacon_frame*)pkt_data;
-            struct beacon_info_value nbiv;
+
             memcpy(bssid.mac_address, b_f->bssid, 6);
 
             if((iter = beacon_info.find(bssid)) != beacon_info.end()) {
                 iter->second.beacon_frame_count += 1;
             }
-
             else
             {
                 nbiv.beacon_frame_count = 1;
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
                 nbiv.data = 0;
                 nbiv.ESSID_Len = 0;
                 memset(nbiv.ESSID,0x00,32);
-                beacon_info.insert(pair<Mac, beacon_info_value>(bssid,nbiv));
+                //beacon_info.insert(pair<Mac, beacon_info_value>(bssid,nbiv));
             }
 
             pkt_data +=32;  //jump to tag 20 + 12
@@ -111,23 +111,11 @@ int main(int argc, char **argv)
                 switch(tag->tag_number)
                 case 0x00:
                     tag = (struct taged_parameter*)pkt_data;
-                    /*
-                    printf("ESSID's length : %d\n",tag->tag_length);
-
-                    for(i=0;i<tag->tag_length;i++)
-                        printf("%c",tag->tag_value[i]);
-                    printf("\n");
-                    */
-
                     if((iter = beacon_info.find(bssid)) == beacon_info.end())
                     {
                         memcpy(nbiv.ESSID,tag->tag_value,tag->tag_length);
                         nbiv.ESSID_Len = tag->tag_length;
-                        beacon_info.insert(pair<Mac, beacon_info_value>(bssid,nbiv));
                     }
-                    /*for(i=0;i<tag->tag_length;i++)
-                        printf("%c",nbiv.ESSID[i]);
-                    printf("\n");*/
 
                     pkt_data += (2+tag->tag_length);//total tag's length
                     pkt_length -= (2+tag->tag_length);
@@ -137,21 +125,19 @@ int main(int argc, char **argv)
 
                     pkt_data += 2+tag->tag_length;
                     pkt_length -= 2+tag->tag_length;
+
                 case 0x03:
                     tag = (struct taged_parameter*)pkt_data;
-                    //printf("Chanel : %02x\n",tag->tag_value[0]);
-                    if((iter = beacon_info.find(bssid)) == beacon_info.end())
-                    {
-                    nbiv.ch = tag->tag_value[0];
+                    memcpy(&nbiv.ch,tag->tag_value,tag->tag_length);
                     beacon_info.insert(pair<Mac, beacon_info_value>(bssid,nbiv));
-                    }
+
                     pkt_data += 2+tag->tag_length;
                     pkt_length -= 2+tag->tag_length;
-
 
                     break;
                 /*default:
                     break;*/
+
             }
             break;
         }
@@ -192,7 +178,7 @@ int main(int argc, char **argv)
         n++;
         break;
     }
-        /*
+
         system("clear");
         cout<<"BSSID              Beacons\t#Data\tCH\tESSID"<<endl;
         for(iter = beacon_info.begin(); iter!=beacon_info.end(); advance(iter,1))
@@ -202,13 +188,17 @@ int main(int argc, char **argv)
             printf("\t");
             cout<<iter->second.beacon_frame_count<<"\t";
             cout<<iter->second.data<<"\t";
-            cout<<iter->second.ch<<"\t";
+            printf("%02x\t",iter->second.ch);
             for(i=0;i<iter->second.ESSID_Len;i++)
                 printf("%c",iter->second.ESSID[i]);
             cout<<endl;
         }
-        */
+        for(iter2 = station_info.begin(); iter!=station_info.end(); advance(iter2,1))
+        {
 
+        }
+
+        /*
         cout<<"BeaconFrame : "<<iter->second.beacon_frame_count<<endl;
         cout<<"#Data : "<<iter->second.data<<endl;
         cout<<"Chanel : "<<iter->second.ch<<endl;
@@ -220,7 +210,7 @@ int main(int argc, char **argv)
         printf("Probe : %d\n",p);
         printf("QosData : %d\n",q);
         printf("Null : %d\n",n);        //count station to bssid data packet (null function + QOS data)
-
+        */
     }
     return 0;
 }
