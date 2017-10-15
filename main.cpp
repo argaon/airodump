@@ -158,7 +158,6 @@ int main(int argc, char **argv)
         case 0x0040:
         {
             //ProbeRequest Packet
-            printf("Get Probe Packet\n");
             pkt_data += 4;  //type_subtype length
             pkt_length -= 4;
 
@@ -175,18 +174,19 @@ int main(int argc, char **argv)
                 bsv.frames_count = 1;
                 memset(bsv.SSID,0x00,32);
                 bsv.SSID_Len = 0;
-                station_info.insert(pair<Mac, bssid_station_value>(station,bsv));
+                //station_info.insert(pair<Mac, bssid_station_value>(station,bsv));
             }
             pkt_data += 20;  //jump to tag 20
             pkt_length -= 20;
 
             p_tag = (struct taged_parameter*)pkt_data;
+
             if(p_tag->tag_number == 0 && p_tag->tag_length > 0)
             {
                 memcpy(bsv.SSID,p_tag->tag_value,p_tag->tag_length);
                 bsv.SSID_Len = p_tag->tag_length;
-                station_info.insert(pair<Mac, bssid_station_value>(station,bsv));
             }
+            station_info.insert(pair<Mac, bssid_station_value>(station,bsv));
         break;
         }
         case 0x4188:
@@ -219,7 +219,7 @@ int main(int argc, char **argv)
                 bsv.frames_count = 1;
                 memset(bsv.SSID,0x00,32);
                 bsv.SSID_Len = 0;
-                //station_info.insert(pair<Mac, bssid_station_value>(station,bsv));
+                station_info.insert(pair<Mac, bssid_station_value>(station,bsv));
             }
             break;
         }
@@ -285,7 +285,7 @@ int main(int argc, char **argv)
         break;
         }
     }
-/*        system("clear");
+        system("clear");
         cout<<"BSSID              Beacons\t#Data\tCH\tESSID"<<endl;
         for(iter = beacon_info.begin(); iter!=beacon_info.end(); advance(iter,1))
         {
@@ -299,8 +299,6 @@ int main(int argc, char **argv)
                 printf("%c",iter->second.ESSID[i]);
             cout<<endl;
         }
-        */
-        system("clear");
         cout<<"BSSID              Station              Frames\tProbe"<<endl;
         for(iter2 = station_info.begin(); iter2!=station_info.end(); advance(iter2,1))
         {
@@ -315,8 +313,6 @@ int main(int argc, char **argv)
                 printf("%c",iter2->second.SSID[i]);
             cout<<endl;
         }
-
-
     }
     return 0;
 }
